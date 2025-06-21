@@ -27,15 +27,6 @@ class TrackFace:
 
             pad = 10
             for face in output.multi_face_landmarks:
-                # Draw mesh overlay
-
-                self.mp_drawing.draw_landmarks(
-                    frame,
-                    face,
-                    self.mp_face.FACEMESH_TESSELATION,
-                    self.mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=1, circle_radius=1),
-                    self.mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=1, circle_radius=1),
-                )
                 # Compute bounding box of landmarks
 
                 xlist = [ele.x for ele in face.landmark]
@@ -48,9 +39,18 @@ class TrackFace:
                 x1, y1 = max(0, x1 - pad), max(0, y1 - pad)
                 x2, y2 = min(w - 1, x2 + pad), min(h - 1, y2 + pad)
 
+                # Make square
+                box_w, box_h = x2 - x1, y2 - y1
+                diff = abs(box_w - box_h)
+                if box_w > box_h:
+                    y2 = min(h - 1, y2 + diff)
+                else:
+                    x2 = min(w - 1, x2 + diff)
+
                 # Region of interest
 
                 roi = frame[y1:y2, x1:x2]
+                roi = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
                 if roi.size > 0:
                     faces.append((roi, (x1, y1, x2, y2)))
 
